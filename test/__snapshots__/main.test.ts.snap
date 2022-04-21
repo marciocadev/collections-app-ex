@@ -1,0 +1,424 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Snapshot 1`] = `
+Object {
+  "Outputs": Object {
+    "CollectionsGatewayEndpoint03B9B5A7": Object {
+      "Value": Object {
+        "Fn::Join": Array [
+          "",
+          Array [
+            "https://",
+            Object {
+              "Ref": "CollectionsGateway39DAD60B",
+            },
+            ".execute-api.",
+            Object {
+              "Ref": "AWS::Region",
+            },
+            ".",
+            Object {
+              "Ref": "AWS::URLSuffix",
+            },
+            "/",
+            Object {
+              "Ref": "CollectionsGatewayDeploymentStageprodA8F7056C",
+            },
+            "/",
+          ],
+        ],
+      },
+    },
+  },
+  "Parameters": Object {
+    "BootstrapVersion": Object {
+      "Default": "/cdk-bootstrap/hnb659fds/version",
+      "Description": "Version of the CDK Bootstrap resources in this environment, automatically retrieved from SSM Parameter Store. [cdk:skip]",
+      "Type": "AWS::SSM::Parameter::Value<String>",
+    },
+  },
+  "Resources": Object {
+    "CollectionTableB2CF3263": Object {
+      "DeletionPolicy": "Retain",
+      "Properties": Object {
+        "AttributeDefinitions": Array [
+          Object {
+            "AttributeName": "type",
+            "AttributeType": "S",
+          },
+          Object {
+            "AttributeName": "title",
+            "AttributeType": "S",
+          },
+        ],
+        "KeySchema": Array [
+          Object {
+            "AttributeName": "type",
+            "KeyType": "HASH",
+          },
+          Object {
+            "AttributeName": "title",
+            "KeyType": "RANGE",
+          },
+        ],
+        "ProvisionedThroughput": Object {
+          "ReadCapacityUnits": 5,
+          "WriteCapacityUnits": 5,
+        },
+        "TableName": "collections-ex",
+      },
+      "Type": "AWS::DynamoDB::Table",
+      "UpdateReplacePolicy": "Retain",
+    },
+    "CollectionsGateway39DAD60B": Object {
+      "Properties": Object {
+        "Name": "collections-ex",
+      },
+      "Type": "AWS::ApiGateway::RestApi",
+    },
+    "CollectionsGatewayAccountB7F867C6": Object {
+      "DependsOn": Array [
+        "CollectionsGateway39DAD60B",
+      ],
+      "Properties": Object {
+        "CloudWatchRoleArn": Object {
+          "Fn::GetAtt": Array [
+            "CollectionsGatewayCloudWatchRole387B76F3",
+            "Arn",
+          ],
+        },
+      },
+      "Type": "AWS::ApiGateway::Account",
+    },
+    "CollectionsGatewayCloudWatchRole387B76F3": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "apigateway.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AmazonAPIGatewayPushToCloudWatchLogs",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "CollectionsGatewayDeploymentC18BAEB9cfea2e21ce82049e2498eef41b0af3d3": Object {
+      "DependsOn": Array [
+        "CollectionsGatewaycollectionsbookPOSTBE886C79",
+        "CollectionsGatewaycollectionsbook76548203",
+        "CollectionsGatewaycollectionsDB662D18",
+      ],
+      "Properties": Object {
+        "Description": "Automatically created by the RestApi construct",
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
+        },
+      },
+      "Type": "AWS::ApiGateway::Deployment",
+    },
+    "CollectionsGatewayDeploymentStageprodA8F7056C": Object {
+      "DependsOn": Array [
+        "CollectionsGatewayAccountB7F867C6",
+      ],
+      "Properties": Object {
+        "DeploymentId": Object {
+          "Ref": "CollectionsGatewayDeploymentC18BAEB9cfea2e21ce82049e2498eef41b0af3d3",
+        },
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
+        },
+        "StageName": "prod",
+      },
+      "Type": "AWS::ApiGateway::Stage",
+    },
+    "CollectionsGatewaycollectionsDB662D18": Object {
+      "Properties": Object {
+        "ParentId": Object {
+          "Fn::GetAtt": Array [
+            "CollectionsGateway39DAD60B",
+            "RootResourceId",
+          ],
+        },
+        "PathPart": "collections",
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
+        },
+      },
+      "Type": "AWS::ApiGateway::Resource",
+    },
+    "CollectionsGatewaycollectionsbook76548203": Object {
+      "Properties": Object {
+        "ParentId": Object {
+          "Ref": "CollectionsGatewaycollectionsDB662D18",
+        },
+        "PathPart": "book",
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
+        },
+      },
+      "Type": "AWS::ApiGateway::Resource",
+    },
+    "CollectionsGatewaycollectionsbookPOSTApiPermissionTesttestCollectionsGateway85E5D82DPOSTcollectionsbook4B40F790": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "InsertItem285D27A6",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "arn:",
+              Object {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              Object {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              Object {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              Object {
+                "Ref": "CollectionsGateway39DAD60B",
+              },
+              "/test-invoke-stage/POST/collections/book",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "CollectionsGatewaycollectionsbookPOSTApiPermissiontestCollectionsGateway85E5D82DPOSTcollectionsbookEC519C07": Object {
+      "Properties": Object {
+        "Action": "lambda:InvokeFunction",
+        "FunctionName": Object {
+          "Fn::GetAtt": Array [
+            "InsertItem285D27A6",
+            "Arn",
+          ],
+        },
+        "Principal": "apigateway.amazonaws.com",
+        "SourceArn": Object {
+          "Fn::Join": Array [
+            "",
+            Array [
+              "arn:",
+              Object {
+                "Ref": "AWS::Partition",
+              },
+              ":execute-api:",
+              Object {
+                "Ref": "AWS::Region",
+              },
+              ":",
+              Object {
+                "Ref": "AWS::AccountId",
+              },
+              ":",
+              Object {
+                "Ref": "CollectionsGateway39DAD60B",
+              },
+              "/",
+              Object {
+                "Ref": "CollectionsGatewayDeploymentStageprodA8F7056C",
+              },
+              "/POST/collections/book",
+            ],
+          ],
+        },
+      },
+      "Type": "AWS::Lambda::Permission",
+    },
+    "CollectionsGatewaycollectionsbookPOSTBE886C79": Object {
+      "Properties": Object {
+        "AuthorizationType": "NONE",
+        "HttpMethod": "POST",
+        "Integration": Object {
+          "IntegrationHttpMethod": "POST",
+          "Type": "AWS_PROXY",
+          "Uri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":lambda:path/2015-03-31/functions/",
+                Object {
+                  "Fn::GetAtt": Array [
+                    "InsertItem285D27A6",
+                    "Arn",
+                  ],
+                },
+                "/invocations",
+              ],
+            ],
+          },
+        },
+        "ResourceId": Object {
+          "Ref": "CollectionsGatewaycollectionsbook76548203",
+        },
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
+        },
+      },
+      "Type": "AWS::ApiGateway::Method",
+    },
+    "InsertItem285D27A6": Object {
+      "DependsOn": Array [
+        "InsertItemServiceRoleDefaultPolicy734CE276",
+        "InsertItemServiceRoleB4E0F2EF",
+      ],
+      "Properties": Object {
+        "Code": Object {
+          "S3Bucket": Object {
+            "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
+          },
+          "S3Key": "222476528193303e0a7fc40b0451080e8f4254c1b0c409fb35cec1fad2f0efac.zip",
+        },
+        "Environment": Object {
+          "Variables": Object {
+            "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+          },
+        },
+        "FunctionName": "collection-insert-ex",
+        "Handler": "index.handler",
+        "Role": Object {
+          "Fn::GetAtt": Array [
+            "InsertItemServiceRoleB4E0F2EF",
+            "Arn",
+          ],
+        },
+        "Runtime": "nodejs14.x",
+      },
+      "Type": "AWS::Lambda::Function",
+    },
+    "InsertItemServiceRoleB4E0F2EF": Object {
+      "Properties": Object {
+        "AssumeRolePolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": Object {
+                "Service": "lambda.amazonaws.com",
+              },
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "ManagedPolicyArns": Array [
+          Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":iam::aws:policy/service-role/AWSLambdaBasicExecutionRole",
+              ],
+            ],
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Role",
+    },
+    "InsertItemServiceRoleDefaultPolicy734CE276": Object {
+      "Properties": Object {
+        "PolicyDocument": Object {
+          "Statement": Array [
+            Object {
+              "Action": Array [
+                "dynamodb:BatchWriteItem",
+                "dynamodb:PutItem",
+                "dynamodb:UpdateItem",
+                "dynamodb:DeleteItem",
+                "dynamodb:DescribeTable",
+              ],
+              "Effect": "Allow",
+              "Resource": Array [
+                Object {
+                  "Fn::GetAtt": Array [
+                    "CollectionTableB2CF3263",
+                    "Arn",
+                  ],
+                },
+                Object {
+                  "Ref": "AWS::NoValue",
+                },
+              ],
+            },
+          ],
+          "Version": "2012-10-17",
+        },
+        "PolicyName": "InsertItemServiceRoleDefaultPolicy734CE276",
+        "Roles": Array [
+          Object {
+            "Ref": "InsertItemServiceRoleB4E0F2EF",
+          },
+        ],
+      },
+      "Type": "AWS::IAM::Policy",
+    },
+  },
+  "Rules": Object {
+    "CheckBootstrapVersion": Object {
+      "Assertions": Array [
+        Object {
+          "Assert": Object {
+            "Fn::Not": Array [
+              Object {
+                "Fn::Contains": Array [
+                  Array [
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "5",
+                  ],
+                  Object {
+                    "Ref": "BootstrapVersion",
+                  },
+                ],
+              },
+            ],
+          },
+          "AssertDescription": "CDK bootstrap stack version 6 required. Please run 'cdk bootstrap' with a recent version of the CDK CLI.",
+        },
+      ],
+    },
+  },
+}
+`;
