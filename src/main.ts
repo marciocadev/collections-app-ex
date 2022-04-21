@@ -2,7 +2,7 @@ import { join } from 'path';
 import { App, Stack, StackProps } from 'aws-cdk-lib';
 import { LambdaIntegration, RestApi } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Alias, Runtime, Version } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 
@@ -29,6 +29,14 @@ export class MyStack extends Stack {
       runtime: Runtime.NODEJS_14_X,
     });
     table.grantWriteData(lambda);
+
+    const version = new Version(this, 'InsertItemVersion', {
+      lambda: lambda,
+    });
+    new Alias(this, 'InsertItemAlias', {
+      aliasName: 'dev',
+      version: version,
+    });
 
     const gateway = new RestApi(this, 'CollectionsGateway', {
       restApiName: 'collections-ex',
