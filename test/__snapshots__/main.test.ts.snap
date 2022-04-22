@@ -2,34 +2,6 @@
 
 exports[`Snapshot 1`] = `
 Object {
-  "Outputs": Object {
-    "CollectionsGatewayEndpoint03B9B5A7": Object {
-      "Value": Object {
-        "Fn::Join": Array [
-          "",
-          Array [
-            "https://",
-            Object {
-              "Ref": "CollectionsGateway39DAD60B",
-            },
-            ".execute-api.",
-            Object {
-              "Ref": "AWS::Region",
-            },
-            ".",
-            Object {
-              "Ref": "AWS::URLSuffix",
-            },
-            "/",
-            Object {
-              "Ref": "CollectionsGatewayDeploymentStageprodA8F7056C",
-            },
-            "/",
-          ],
-        ],
-      },
-    },
-  },
   "Parameters": Object {
     "BootstrapVersion": Object {
       "Default": "/cdk-bootstrap/hnb659fds/version",
@@ -39,11 +11,11 @@ Object {
   },
   "Resources": Object {
     "CollectionTableB2CF3263": Object {
-      "DeletionPolicy": "Retain",
+      "DeletionPolicy": "Delete",
       "Properties": Object {
         "AttributeDefinitions": Array [
           Object {
-            "AttributeName": "type",
+            "AttributeName": "itemType",
             "AttributeType": "S",
           },
           Object {
@@ -53,7 +25,7 @@ Object {
         ],
         "KeySchema": Array [
           Object {
-            "AttributeName": "type",
+            "AttributeName": "itemType",
             "KeyType": "HASH",
           },
           Object {
@@ -68,7 +40,15 @@ Object {
         "TableName": "collections-ex",
       },
       "Type": "AWS::DynamoDB::Table",
-      "UpdateReplacePolicy": "Retain",
+      "UpdateReplacePolicy": "Delete",
+    },
+    "CollectionsApiKey25E0AE3D": Object {
+      "Properties": Object {
+        "Enabled": true,
+        "Name": "CollectionsApiKey",
+        "Value": "6230314823798cf51af4121cf1caf4f4",
+      },
+      "Type": "AWS::ApiGateway::ApiKey",
     },
     "CollectionsGateway39DAD60B": Object {
       "Properties": Object {
@@ -121,34 +101,35 @@ Object {
       },
       "Type": "AWS::IAM::Role",
     },
-    "CollectionsGatewayDeploymentC18BAEB9cfea2e21ce82049e2498eef41b0af3d3": Object {
-      "DependsOn": Array [
-        "CollectionsGatewaycollectionsbookPOSTBE886C79",
-        "CollectionsGatewaycollectionsbook76548203",
-        "CollectionsGatewaycollectionsDB662D18",
-      ],
+    "CollectionsGatewayCollectionsErrorModelD1FF6616": Object {
       "Properties": Object {
-        "Description": "Automatically created by the RestApi construct",
+        "ContentType": "application/json",
+        "Name": "ErrorModel",
         "RestApiId": Object {
           "Ref": "CollectionsGateway39DAD60B",
         },
+        "Schema": Object {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "errorResponse",
+          "type": "object",
+        },
       },
-      "Type": "AWS::ApiGateway::Deployment",
+      "Type": "AWS::ApiGateway::Model",
     },
-    "CollectionsGatewayDeploymentStageprodA8F7056C": Object {
-      "DependsOn": Array [
-        "CollectionsGatewayAccountB7F867C6",
-      ],
+    "CollectionsGatewayCollectionsResponseModelBF2A10B4": Object {
       "Properties": Object {
-        "DeploymentId": Object {
-          "Ref": "CollectionsGatewayDeploymentC18BAEB9cfea2e21ce82049e2498eef41b0af3d3",
-        },
+        "ContentType": "application/json",
+        "Name": "ResponseModel",
         "RestApiId": Object {
           "Ref": "CollectionsGateway39DAD60B",
         },
-        "StageName": "prod",
+        "Schema": Object {
+          "$schema": "http://json-schema.org/draft-04/schema#",
+          "title": "pollResponse",
+          "type": "object",
+        },
       },
-      "Type": "AWS::ApiGateway::Stage",
+      "Type": "AWS::ApiGateway::Model",
     },
     "CollectionsGatewaycollectionsDB662D18": Object {
       "Properties": Object {
@@ -177,51 +158,102 @@ Object {
       },
       "Type": "AWS::ApiGateway::Resource",
     },
-    "CollectionsGatewaycollectionsbookPOSTApiPermissionTesttestCollectionsGateway85E5D82DPOSTcollectionsbook4B40F790": Object {
+    "CollectionsGatewaycollectionsbookPOSTBE886C79": Object {
       "Properties": Object {
-        "Action": "lambda:InvokeFunction",
-        "FunctionName": Object {
-          "Fn::GetAtt": Array [
-            "InsertItem285D27A6",
-            "Arn",
+        "ApiKeyRequired": true,
+        "AuthorizationType": "NONE",
+        "HttpMethod": "POST",
+        "Integration": Object {
+          "IntegrationHttpMethod": "POST",
+          "IntegrationResponses": Array [
+            Object {
+              "StatusCode": "200",
+            },
+            Object {
+              "ResponseTemplates": Object {
+                "application/json": "#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
+{
+  \\"exception\\": \\"$errorMessageObj.exception\\",
+  \\"message\\": \\"$errorMessageObj.message\\"
+}",
+              },
+              "SelectionPattern": ".*\\"code\\":400.*",
+              "StatusCode": "400",
+            },
           ],
-        },
-        "Principal": "apigateway.amazonaws.com",
-        "SourceArn": Object {
-          "Fn::Join": Array [
-            "",
-            Array [
-              "arn:",
-              Object {
-                "Ref": "AWS::Partition",
-              },
-              ":execute-api:",
-              Object {
-                "Ref": "AWS::Region",
-              },
-              ":",
-              Object {
-                "Ref": "AWS::AccountId",
-              },
-              ":",
-              Object {
-                "Ref": "CollectionsGateway39DAD60B",
-              },
-              "/test-invoke-stage/POST/collections/book",
+          "RequestTemplates": Object {
+            "application/json": "{
+  \\"item\\": \\"book\\",
+  \\"title\\": $input.json('$.title'),
+  \\"author\\": $input.json('$.author'),
+  \\"ISBN\\": $input.json('$.ISBN')
+}",
+          },
+          "Type": "AWS",
+          "Uri": Object {
+            "Fn::Join": Array [
+              "",
+              Array [
+                "arn:",
+                Object {
+                  "Ref": "AWS::Partition",
+                },
+                ":apigateway:",
+                Object {
+                  "Ref": "AWS::Region",
+                },
+                ":lambda:path/2015-03-31/functions/",
+                Object {
+                  "Fn::GetAtt": Array [
+                    "InsertItem285D27A6",
+                    "Arn",
+                  ],
+                },
+                ":\${stageVariables.lambdaAlias}/invocations",
+              ],
             ],
-          ],
+          },
+        },
+        "MethodResponses": Array [
+          Object {
+            "ResponseModels": Object {
+              "application/json": Object {
+                "Ref": "CollectionsGatewayCollectionsResponseModelBF2A10B4",
+              },
+            },
+            "StatusCode": "200",
+          },
+          Object {
+            "ResponseModels": Object {
+              "application/json": Object {
+                "Ref": "CollectionsGatewayCollectionsErrorModelD1FF6616",
+              },
+            },
+            "StatusCode": "400",
+          },
+          Object {
+            "ResponseModels": Object {
+              "application/json": Object {
+                "Ref": "CollectionsGatewayCollectionsErrorModelD1FF6616",
+              },
+            },
+            "StatusCode": "404",
+          },
+        ],
+        "ResourceId": Object {
+          "Ref": "CollectionsGatewaycollectionsbook76548203",
+        },
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
         },
       },
-      "Type": "AWS::Lambda::Permission",
+      "Type": "AWS::ApiGateway::Method",
     },
-    "CollectionsGatewaycollectionsbookPOSTApiPermissiontestCollectionsGateway85E5D82DPOSTcollectionsbookEC519C07": Object {
+    "CollectionsGatewaycollectionsbookPOSTCollectionsPermission7F50CF96": Object {
       "Properties": Object {
         "Action": "lambda:InvokeFunction",
         "FunctionName": Object {
-          "Fn::GetAtt": Array [
-            "InsertItem285D27A6",
-            "Arn",
-          ],
+          "Ref": "InsertItemAliasDD746C18",
         },
         "Principal": "apigateway.amazonaws.com",
         "SourceArn": Object {
@@ -246,7 +278,7 @@ Object {
               },
               "/",
               Object {
-                "Ref": "CollectionsGatewayDeploymentStageprodA8F7056C",
+                "Ref": "Stage0E8C2AF5",
               },
               "/POST/collections/book",
             ],
@@ -255,45 +287,16 @@ Object {
       },
       "Type": "AWS::Lambda::Permission",
     },
-    "CollectionsGatewaycollectionsbookPOSTBE886C79": Object {
+    "Deployment37BBD5E4544ceabe9f41281617865980e32a689c": Object {
+      "DependsOn": Array [
+        "CollectionsGatewaycollectionsbookPOSTBE886C79",
+      ],
       "Properties": Object {
-        "AuthorizationType": "NONE",
-        "HttpMethod": "POST",
-        "Integration": Object {
-          "IntegrationHttpMethod": "POST",
-          "Type": "AWS_PROXY",
-          "Uri": Object {
-            "Fn::Join": Array [
-              "",
-              Array [
-                "arn:",
-                Object {
-                  "Ref": "AWS::Partition",
-                },
-                ":apigateway:",
-                Object {
-                  "Ref": "AWS::Region",
-                },
-                ":lambda:path/2015-03-31/functions/",
-                Object {
-                  "Fn::GetAtt": Array [
-                    "InsertItem285D27A6",
-                    "Arn",
-                  ],
-                },
-                "/invocations",
-              ],
-            ],
-          },
-        },
-        "ResourceId": Object {
-          "Ref": "CollectionsGatewaycollectionsbook76548203",
-        },
         "RestApiId": Object {
           "Ref": "CollectionsGateway39DAD60B",
         },
       },
-      "Type": "AWS::ApiGateway::Method",
+      "Type": "AWS::ApiGateway::Deployment",
     },
     "InsertItem285D27A6": Object {
       "DependsOn": Array [
@@ -305,11 +308,14 @@ Object {
           "S3Bucket": Object {
             "Fn::Sub": "cdk-hnb659fds-assets-\${AWS::AccountId}-\${AWS::Region}",
           },
-          "S3Key": "222476528193303e0a7fc40b0451080e8f4254c1b0c409fb35cec1fad2f0efac.zip",
+          "S3Key": "16e26295c60bfbf787eb7031e23f6cd8edce3404ad30e692e05bf0cca39c17fc.zip",
         },
         "Environment": Object {
           "Variables": Object {
             "AWS_NODEJS_CONNECTION_REUSE_ENABLED": "1",
+            "TABLE_NAME": Object {
+              "Ref": "CollectionTableB2CF3263",
+            },
           },
         },
         "FunctionName": "collection-insert-ex",
@@ -323,6 +329,31 @@ Object {
         "Runtime": "nodejs14.x",
       },
       "Type": "AWS::Lambda::Function",
+    },
+    "InsertItemAliasDD746C18": Object {
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "InsertItem285D27A6",
+        },
+        "FunctionVersion": Object {
+          "Fn::GetAtt": Array [
+            "InsertItemCurrentVersionD5DEEC582b4764774112d7939882d8044fc2ab22",
+            "Version",
+          ],
+        },
+        "Name": "dev",
+      },
+      "Type": "AWS::Lambda::Alias",
+    },
+    "InsertItemCurrentVersionD5DEEC582b4764774112d7939882d8044fc2ab22": Object {
+      "DeletionPolicy": "Retain",
+      "Properties": Object {
+        "FunctionName": Object {
+          "Ref": "InsertItem285D27A6",
+        },
+      },
+      "Type": "AWS::Lambda::Version",
+      "UpdateReplacePolicy": "Retain",
     },
     "InsertItemServiceRoleB4E0F2EF": Object {
       "Properties": Object {
@@ -391,6 +422,62 @@ Object {
         ],
       },
       "Type": "AWS::IAM::Policy",
+    },
+    "Stage0E8C2AF5": Object {
+      "DependsOn": Array [
+        "CollectionsGatewayAccountB7F867C6",
+      ],
+      "Properties": Object {
+        "DeploymentId": Object {
+          "Ref": "Deployment37BBD5E4544ceabe9f41281617865980e32a689c",
+        },
+        "MethodSettings": Array [
+          Object {
+            "DataTraceEnabled": true,
+            "HttpMethod": "*",
+            "LoggingLevel": "ERROR",
+            "ResourcePath": "/*",
+          },
+        ],
+        "RestApiId": Object {
+          "Ref": "CollectionsGateway39DAD60B",
+        },
+        "StageName": "dev",
+        "TracingEnabled": true,
+        "Variables": Object {
+          "lambdaAlias": "dev",
+        },
+      },
+      "Type": "AWS::ApiGateway::Stage",
+    },
+    "UsagePlanC18B28F1": Object {
+      "Properties": Object {
+        "ApiStages": Array [
+          Object {
+            "ApiId": Object {
+              "Ref": "CollectionsGateway39DAD60B",
+            },
+            "Stage": Object {
+              "Ref": "Stage0E8C2AF5",
+            },
+            "Throttle": Object {},
+          },
+        ],
+        "UsagePlanName": "CollectionsUsagePlan",
+      },
+      "Type": "AWS::ApiGateway::UsagePlan",
+    },
+    "UsagePlanUsagePlanKeyResourcetestCollectionsApiKeyC34C8052BC4C2FB8": Object {
+      "Properties": Object {
+        "KeyId": Object {
+          "Ref": "CollectionsApiKey25E0AE3D",
+        },
+        "KeyType": "API_KEY",
+        "UsagePlanId": Object {
+          "Ref": "UsagePlanC18B28F1",
+        },
+      },
+      "Type": "AWS::ApiGateway::UsagePlanKey",
     },
   },
   "Rules": Object {

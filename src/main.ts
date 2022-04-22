@@ -2,10 +2,10 @@ import { join } from 'path';
 import { App, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { ApiKey, AwsIntegration, Deployment, JsonSchemaType, JsonSchemaVersion, MethodLoggingLevel, RestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
 import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Alias, Runtime } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 export class MyStack extends Stack {
   constructor(scope: Construct, id: string, props: StackProps = {}) {
@@ -14,7 +14,7 @@ export class MyStack extends Stack {
     const table = new Table(this, 'CollectionTable', {
       tableName: 'collections-ex',
       partitionKey: {
-        name: 'type',
+        name: 'itemType',
         type: AttributeType.STRING,
       },
       sortKey: {
@@ -31,6 +31,9 @@ export class MyStack extends Stack {
       runtime: Runtime.NODEJS_14_X,
       currentVersionOptions: {
         removalPolicy: RemovalPolicy.RETAIN,
+      },
+      environment: {
+        TABLE_NAME: table.tableName,
       },
     });
     table.grantWriteData(lambda);
@@ -56,26 +59,23 @@ export class MyStack extends Stack {
       proxy: false,
       path: `2015-03-31/functions/${lambda.functionArn}`.concat(':${stageVariables.lambdaAlias}/invocations'),
       options: {
-        requestTemplates: {
-          'application/json': `
-{
-  "type": "book",
+        requestTemplates: { 'application/json': `{
+  "itemType": "book",
   "title": $input.json('$.title'),
-  "detail": $input.json('$.detail')
-}`,
+  "author": $input.json('$.author'),
+  "ISBN": $input.json('$.ISBN')
+}`
         },
         integrationResponses: [
           { statusCode: '200' },
-          { 
-            statusCode: '404',
-            selectionPattern: '.*"status":404.*',
-            responseTemplates: {
-              'application/json': `
-#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
+          {
+            statusCode: '400',
+            selectionPattern: '.*"code":400.*',
+            responseTemplates: { 'application/json': `#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
 {
-  "code": "$errorMessageObj.code",
-  "detail": "$errorMessageObj.detail"
-}`,
+  "exception": "$errorMessageObj.exception",
+  "message": "$errorMessageObj.message"
+}`
             },
           },
         ],
@@ -104,11 +104,13 @@ export class MyStack extends Stack {
       apiKeyRequired: true,
       methodResponses: [
         { statusCode: '200', responseModels: { 'application/json': responseModel } },
+        { statusCode: '400', responseModels: { 'application/json': errorModel } },
         { statusCode: '404', responseModels: { 'application/json': errorModel } },
       ],
     });
 
-    const deployment = new Deployment(this, 'Deployment'.concat(new Date().toISOString()), {
+    // .concat(new Date().toISOString())
+    const deployment = new Deployment(this, 'Deployment', {
       api: gateway,
     });
     const stage = new Stage(this, 'Stage', {

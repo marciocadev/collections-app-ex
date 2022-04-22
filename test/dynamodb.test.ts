@@ -15,7 +15,7 @@ test('DynamoDB exist', () => {
     TableName: 'collections-ex',
     KeySchema: [
       {
-        AttributeName: 'type',
+        AttributeName: 'itemType',
         KeyType: 'HASH',
       },
       {
