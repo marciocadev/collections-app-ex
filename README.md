@@ -26,10 +26,19 @@ dados de CD: Artista, Álbum, Ano de Lançamento, Nº de discos, Gravadora, Gên
 * projen new awscdk-app-ts --projen-ts --cdk-version=2.20.0
 
 # first-step
-Nesse momento vamos criar um modo de inserir um item na minha tabela de coleções da forma mais básica
+Vamos criar um lambda e integrar ele com o ApiGateway
 
 # second-step
-Incluiro api-key
+Incluir o api-key
+
+# third-step
+Incluir o versionamento no lambda
+
+# forth-step
+Incluir o dynamodb e inserir no banco
+
+# fifth-step
+deixando as coisas mais tensas
 
 # dynamodb uteis
 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html
