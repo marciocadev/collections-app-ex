@@ -10,4 +10,4 @@ Este tutorial demostrara os paços para a criação de um projeto para gerenciar
 Nesse momento vamos criar um modo de inserir um item na minha tabela de coleções da forma mais básica
 
 # second-step
-Nessa momento vou adicionar o versionamento nos lambdas e gerar alias, o alias dev terá sempre a última versão
+Incluiro api-key
