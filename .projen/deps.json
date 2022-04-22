@@ -21,7 +21,11 @@
     },
     {
       "name": "aws-cdk",
-      "version": "^2.20.0",
+      "version": "^2.21.0",
+      "type": "build"
+    },
+    {
+      "name": "aws-sdk-client-mock",
       "type": "build"
     },
     {
@@ -81,8 +85,16 @@
       "type": "build"
     },
     {
+      "name": "@aws-sdk/client-dynamodb",
+      "type": "runtime"
+    },
+    {
+      "name": "@aws-sdk/util-dynamodb",
+      "type": "runtime"
+    },
+    {
       "name": "aws-cdk-lib",
-      "version": "^2.20.0",
+      "version": "^2.21.0",
       "type": "runtime"
     },
     {
