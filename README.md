@@ -33,4 +33,4 @@ Vamos criar um Lambda e integrar ele com o ApiGateway
 Incluir o ApiKey, UsagePlan e habilitando tracing e log no gateway
 
 # third-step
-Incluir o versionamento no Lambda e gerando alias
+Incluir o versionamento e alias no Lambda
