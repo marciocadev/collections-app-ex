@@ -1,7 +1,7 @@
 import { join } from 'path';
-import { App, Stack, StackProps } from 'aws-cdk-lib';
+import { App, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { ApiKey, LambdaIntegration, MethodLoggingLevel, RestApi, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
-import { Runtime } from 'aws-cdk-lib/aws-lambda';
+import { Alias, IVersion, Runtime, Version } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 
@@ -14,6 +14,9 @@ export class MyStack extends Stack {
       entry: join(__dirname, './lambda-fns/insert-item.ts'),
       handler: 'handler',
       runtime: Runtime.NODEJS_14_X,
+      currentVersionOptions: {
+        removalPolicy: RemovalPolicy.RETAIN,
+      },
     });
 
     const gateway = new RestApi(this, 'CollectionsGateway', {
@@ -39,11 +42,31 @@ export class MyStack extends Stack {
     const usagePlan = new UsagePlan(this, 'UsagePlan', {
       name: 'CollectionsUsagePlan',
     });
-    usagePlan.addApiStage({
-      stage: gateway.deploymentStage,
-      api: gateway,
-    });
     usagePlan.addApiKey(apiKey);
+    usagePlan.addApiStage({
+      api: gateway,
+      stage: gateway.deploymentStage,
+    });
+
+    const aliasList = [
+      { name: 'Dev', version: undefined },
+      { name: 'Hmg', version: 59 },
+    ];
+    for (let aliasObj of aliasList) {
+      let version: IVersion;
+      if (aliasObj.version) {
+        version = Version.fromVersionAttributes(this, 'CollectionsVersion', {
+          lambda: lambda,
+          version: aliasObj.version.toString(),
+        });
+      } else {
+        version = lambda.currentVersion;
+      }
+      new Alias(this, 'CollectionsAlias'.concat(aliasObj.name), {
+        aliasName: aliasObj.name.toLowerCase(),
+        version: version,
+      });
+    }
   }
 }
 

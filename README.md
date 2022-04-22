@@ -27,8 +27,10 @@ dados de CD: Artista, Álbum, Ano de Lançamento, Nº de discos, Gravadora, Gên
 * projen new awscdk-app-ts --projen-ts --cdk-version=2.20.0
 
 # first-step
-Vamos criar um lambda e integrar ele com o ApiGateway
+Vamos criar um Lambda e integrar ele com o ApiGateway
 
 # second-step
 Incluir o ApiKey, UsagePlan e habilitando tracing e log no gateway
 
+# third-step
+Incluir o versionamento no Lambda e gerando alias
