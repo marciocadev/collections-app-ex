@@ -56,3 +56,6 @@ Incluir o ApiKey, UsagePlan e habilitando tracing e log no gateway
 
 # third-step
 Incluir o versionamento e alias no Lambda
+
+# fourth-step
+Incluir controle de Deployment e Stage, reescrita de payload e response com AwsIntegration
