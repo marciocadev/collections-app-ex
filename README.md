@@ -30,4 +30,5 @@ dados de CD: Artista, Álbum, Ano de Lançamento, Nº de discos, Gravadora, Gên
 Vamos criar um lambda e integrar ele com o ApiGateway
 
 # second-step
-Incluir o ApiKey
+Incluir o ApiKey, UsagePlan e habilitando tracing e log no gateway
+
