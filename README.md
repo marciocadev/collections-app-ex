@@ -21,6 +21,28 @@ dados de livros: título, autor(es), tradutor(es), número da edição, editor, 
 ```
 
 dados de CD: Artista, Álbum, Ano de Lançamento, Nº de discos, Gravadora, Gênero e Nº de músicas
+```json
+{
+  "title": "Zappa's Universe",
+  "artist": "Various (Tribute)",
+  "musicList": [
+    "Elvis Has Just Left The Building",
+    "Brow Shoes Don't Make It",
+    "Jazz Discharge Party Hats",
+    "Inca Roads",
+    "Moggio",
+    "Nite School",
+    "Echidna's Art (Of You)",
+    "Hungry Freaks, Daddy",
+    "Heavenly Bank Account",
+    "The Meek Shall Inherit Nothing",
+    "Waka Jawaka",
+    "Sofa",
+    "Dirty Love",
+    "Hot Plate Heaven At The Green Hotel",
+  ],
+}
+```
 
 # inicialização
 * mkdir collections-app && cd collections-app
