@@ -1,10 +1,11 @@
 import { join } from 'path';
 import { App, RemovalPolicy, Stack, StackProps } from 'aws-cdk-lib';
 import { ApiKey, AwsIntegration, Deployment, JsonSchemaType, JsonSchemaVersion, Method, MethodLoggingLevel, RestApi, Stage, UsagePlan } from 'aws-cdk-lib/aws-apigateway';
+import { AttributeType, Table } from 'aws-cdk-lib/aws-dynamodb';
+import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 import { Alias, Function, IVersion, Runtime, Version } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
-import { ServicePrincipal } from 'aws-cdk-lib/aws-iam';
 
 export class MyStack extends Stack {
   lambda: Function;
@@ -12,6 +13,19 @@ export class MyStack extends Stack {
 
   constructor(scope: Construct, id: string, props: StackProps = {}) {
     super(scope, id, props);
+
+    const table = new Table(this, 'CollectionsTable', {
+      tableName: 'collections-ex',
+      partitionKey: {
+        name: 'itemType',
+        type: AttributeType.STRING,
+      },
+      sortKey: {
+        name: 'title',
+        type: AttributeType.STRING,
+      },
+      removalPolicy: RemovalPolicy.DESTROY,
+    });
 
     this.lambda = new NodejsFunction(this, 'InsertItem', {
       functionName: 'collection-insert-ex',
@@ -21,12 +35,16 @@ export class MyStack extends Stack {
       currentVersionOptions: {
         removalPolicy: RemovalPolicy.RETAIN,
       },
+      environment: {
+        TABLE_NAME: table.tableName,
+      },
     });
+    table.grantWriteData(this.lambda);
 
     let aliasObjList: Alias[] = [];
     const aliasList: {[key:string]: any}[] = [
       { name: 'Dev' },
-      { name: 'Stage1', version: 63},
+      { name: 'Stage1' },
     ];
     for (let aliasObj of aliasList) {
       let version: IVersion;
@@ -42,7 +60,7 @@ export class MyStack extends Stack {
         new Alias(this, 'CollectionsAlias'.concat(aliasObj.name), {
           aliasName: aliasObj.name.toLowerCase(),
           version: version,
-        })  
+        }),
       );
     }
 
@@ -50,7 +68,7 @@ export class MyStack extends Stack {
       restApiName: 'collections-ex',
       deploy: false,
     });
-    
+
     const responseModel = this.getResponseModel();
     const errorModel = this.getErrorResponseModel();
     let methodList: Method[] = [];
@@ -64,7 +82,7 @@ export class MyStack extends Stack {
           { statusCode: '200', responseModels: { 'application/json': responseModel } },
           { statusCode: '400', responseModels: { 'application/json': errorModel } },
         ],
-      })
+      }),
     );
     const cdResource = collectionsResource.addResource('cd');
     methodList.push(
@@ -74,7 +92,7 @@ export class MyStack extends Stack {
           { statusCode: '200', responseModels: { 'application/json': responseModel } },
           { statusCode: '400', responseModels: { 'application/json': errorModel } },
         ],
-      })
+      }),
     );
 
     const apiKey = new ApiKey(this, 'CollectionsApiKey', {
@@ -104,7 +122,7 @@ export class MyStack extends Stack {
         },
       });
       if (stageName.toLowerCase() === 'dev') {
-        this.restApi.deploymentStage = stage;  
+        this.restApi.deploymentStage = stage;
       }
       usagePlan.addApiStage({
         api: this.restApi,
@@ -116,9 +134,9 @@ export class MyStack extends Stack {
     for (let s of stageList) {
       for (let a of aliasObjList) {
         for (let m in methodList) {
-          const id = 'CollectionsPermissions'.concat(s).concat(a.aliasName).concat(m);
+          const idPerm = 'CollectionsPermissions'.concat(s).concat(a.aliasName).concat(m);
           const stageName = this.restApi.deploymentStage.stageName;
-          a.addPermission(id, {
+          a.addPermission(idPerm, {
             principal: principal,
             action: 'lambda:InvokeFunction',
             scope: methodList[m],
@@ -159,23 +177,25 @@ export class MyStack extends Stack {
       proxy: false,
       path: `2015-03-31/functions/${this.lambda.functionArn}`.concat(':${stageVariables.lambdaAlias}/invocations'),
       options: {
-        requestTemplates: { 'application/json': `{
+        requestTemplates: {
+          'application/json': `{
   "itemType": "cd",
   "title": $input.json('$.title'),
   "artist": $input.json('$.artist'),
   "musicList": $input.json('$.musicList')
-}`
+}`,
         },
         integrationResponses: [
           { statusCode: '200' },
           {
             statusCode: '400',
             selectionPattern: '.*"code":400.*',
-            responseTemplates: { 'application/json': `#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
+            responseTemplates: {
+              'application/json': `#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
 {
   "exception": "$errorMessageObj.exception",
   "message": "$errorMessageObj.message"
-}`
+}`,
             },
           },
         ],
@@ -189,23 +209,25 @@ export class MyStack extends Stack {
       proxy: false,
       path: `2015-03-31/functions/${this.lambda.functionArn}`.concat(':${stageVariables.lambdaAlias}/invocations'),
       options: {
-        requestTemplates: { 'application/json': `{
+        requestTemplates: {
+          'application/json': `{
   "itemType": "book",
   "title": $input.json('$.title'),
   "author": $input.json('$.author'),
   "ISBN": $input.json('$.ISBN')
-}`
+}`,
         },
         integrationResponses: [
           { statusCode: '200' },
           {
             statusCode: '400',
             selectionPattern: '.*"code":400.*',
-            responseTemplates: { 'application/json': `#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
+            responseTemplates: {
+              'application/json': `#set ($errorMessageObj = $util.parseJson($input.path('$.errorMessage')))
 {
   "exception": "$errorMessageObj.exception",
   "message": "$errorMessageObj.message"
-}`
+}`,
             },
           },
         ],

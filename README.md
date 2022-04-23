@@ -60,6 +60,13 @@ Incluir o versionamento e alias no Lambda
 # fourth-step
 Incluir controle de Deployment e Stage, reescrita de payload e response com AwsIntegration
 
+# fifth-step
+Incluir a tabela do DynamoDB e incluir o item
+
+# cfn-dia
+* cfn-dia h -t ./cdk.out/collections-app-ex-dev.template.json -sa -o ./diagram/
+
+
 # dynamodb úteis
 https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-dynamodb-table.html https://docs.aws.amazon.com/amazondynamodb/latest/developerguide/Programming.Errors.html
 
