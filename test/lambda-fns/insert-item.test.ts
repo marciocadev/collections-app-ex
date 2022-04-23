@@ -35,7 +35,7 @@ describe('Validate insert-item lambda', () => {
     });
   });
 
-  test('aaa', async() => {
+  test('duplicated item', async() => {
     const exception = new ConditionalCheckFailedException({
       $metadata: {
         httpStatusCode: 400,
@@ -45,19 +45,13 @@ describe('Validate insert-item lambda', () => {
 
     dynamoDBMock.on(PutItemCommand).rejects(exception);
 
-    const event = {
-      title: 'A Guerra dos Consoles',
-      author: 'Blake J. Harris',
-      ISBN: '978-85-8057-822-5',
-    };
-
-    // const error = new Error(JSON.stringify({
-    //   exception: 'ConditionalCheckFailedException',
-    //   message: '',
-    //   code: 400,
-    // }));
-    expect(async() => {
+    await expect(async() => {
+      const event = {
+        title: 'A Guerra dos Consoles',
+        author: 'Blake J. Harris',
+        ISBN: '978-85-8057-822-5',
+      };
       await handler(event);
-    }).resolves.toThrow(Error)
+    }).rejects.toThrow(Error);
   });
 });
